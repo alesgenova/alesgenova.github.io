@@ -4,12 +4,12 @@ title: About
 permalink: /about/
 ---
 
-Some information about you!
+I grew up in Milan, Italy and live in Albany, NY.
 
-### More Information
+I got a PhD in computational chemistry, and now work as a software engineer.
 
-A place to include any other types of information that you'd like to include about yourself.
+I spend most of my free time with my motorcycles, electric guitars, and sim-racing rig.
 
 ### Contact me
 
-[email@domain.com](mailto:email@domain.com)
+[ales.genova@mail.com](mailto:ales.genova@mail.com)
