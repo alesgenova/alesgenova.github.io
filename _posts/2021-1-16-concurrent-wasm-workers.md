@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Running WebAssembly Rust in a Pool of Concurrent Web Workers in JavaScript"
+title: "Running Rust in WebAssembly in a Pool of Concurrent Web Workers in JavaScript"
 image_dir: 2021-1-16-concurrent-wasm-workers
 ---
 ![_config.yml]({{ site.baseurl }}/images/{{ page.image_dir }}/diagram.png)
@@ -28,7 +28,7 @@ If you would like to run this madness, an instance of this application is deploy
 
 [![_config.yml]({{ site.baseurl }}/images/{{ page.image_dir }}/ray_tracer.gif)](https://alesgenova.github.io/ray-tracer-app/)
 
-If you would like to see the details of the implementation, you can find the source code of the app on [Github]()
+If you would like to see the details of the implementation, you can find the source code of the app on [Github](https://github.com/alesgenova/ray-tracer-app)
 
 ## Bonus
 
@@ -38,5 +38,5 @@ Using a similar approach, I also created an app that can detect the pitch of sou
 
 [![_config.yml]({{ site.baseurl }}/images/{{ page.image_dir }}/pitch_detection.gif)](https://alesgenova.github.io/pitch-detection-app/)
 
-- Source code: [Github](https://alesgenova.github.io/pitch-detection/)
+- Source code: [Github](https://github.com/alesgenova/pitch-detection-app)
 - Pitch detection library: [Github](https://github.com/alesgenova/pitch-detection)
