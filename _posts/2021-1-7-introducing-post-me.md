@@ -4,9 +4,9 @@ title: "Communicate easily with Web Workers and other Windows: post-me"
 image_dir: 2021-1-7-introducing-post-me
 ---
 
-[post-me](https://github.com/alesgenova/post-me) is a typescript library that provides a simple promise-based API for bidirectional communication with web workers and other windows (iframes, popups, etc.).
-
 ![_config.yml]({{ site.baseurl }}/images/{{ page.image_dir }}/diagram.png)
+
+[post-me](https://github.com/alesgenova/post-me) is a typescript library that provides a simple promise-based API for bidirectional communication with web workers and other windows (iframes, popups, etc.).
 
 ## 0. TLDR
 
