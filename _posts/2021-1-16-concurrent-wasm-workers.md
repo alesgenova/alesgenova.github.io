@@ -18,7 +18,7 @@ In this proof of concept application, the main application starts a pool of web 
 The task in question is to to render a single frame of a simple 3D scene using ray-tracing (path-tracing). The computationally intensive rendering is performed by a `rust` library compiled to WebAssembly.
 
 These are the tools I used:
-- __`post-me`__ to communicating with the workers using a `Promise` API: [Blog](https://alesgenova.github.io/introducing-post-me/) - [Github](https://github.com/alesgenova/post-me)
+- __`post-me`__ to communicate with the workers using a `Promise` API: [Blog](https://alesgenova.github.io/introducing-post-me/) - [Github](https://github.com/alesgenova/post-me)
 - My own toy ray tracing engine I implemented in rust a couple of years ago: [Github](https://github.com/alesgenova/ray-tracer)
 - __`wasm-bindgen`__ to compile rust to wasm and create js bindings: [Github](https://github.com/rustwasm/wasm-bindgen)
 - Small in-house task queue to dispatch tasks to workers when available.
