@@ -1,27 +1,28 @@
 ---
 layout: post
-title: "Communicate easily with Web Workers and other Windows: post-me"
+title: "Use web Workers and other Windows through a simple Promise API "
 image_dir: 2021-1-7-introducing-post-me
 ---
 
 ![_config.yml]({{ site.baseurl }}/images/{{ page.image_dir }}/diagram.png)
 
-[post-me](https://github.com/alesgenova/post-me) is a typescript library that provides a simple promise-based API for bidirectional communication with web workers and other windows (iframes, popups, etc.).
+[post-me](https://github.com/alesgenova/post-me) is a typescript library that provides a simple Promise API for bidirectional communication with web workers and other windows (iframes, popups, etc.).
 
 ## 0. TLDR
 
-With [post-me](https://github.com/alesgenova/post-me) it is easy for a parent (for example the main app) and a child (for example a worker) to expose methods and custom events to each other.
+With [__post-me__](https://github.com/alesgenova/post-me) it is easy for a parent (for example the main app) and a child (for example a worker) to expose methods and custom events to each other.
 
 Main features:
-- Parent and child can both expose methods and/or events.
-- Strong typing of method names, arguments, return values, as well as event names and payloads.
-- Establish multiple concurrent connections.
-- Easily extensible to more use cases.
-- No dependencies: 2kb gzip bundle.
-- Excellent test coverage.
-- Open source (MIT): [https://github.com/alesgenova/post-me](https://github.com/alesgenova/post-me)
+- 🔁 Parent and child can both __expose__ __methods__ and/or __events__.
+- 🔎 __Strong typing__ of method names, arguments, return values, as well as event names and payloads.
+- 🤙 Seamlessly pass __callbacks__ to the other context to get progress or partial results.
+- 📨 __Transfer__ arguments/return values/payloads when needed instead of cloning.
+- 🔗 Establish __multiple__ concurrent __connections__.
+- 🌱 __No dependencies__: 2kb gzip bundle.
+- 🧪 Excellent __test coverage__.
+- 👐 Open source (MIT): [https://github.com/alesgenova/post-me](https://github.com/alesgenova/post-me)
 
-Below is a minimal example of using post-me to communicate with a web worker. In this example, the worker exposes two methods (`sum` and `mul`) to the parent, while the parent exposes a single event (`ping`) to the worker.
+Below is a minimal example of using post-me to communicate with a web worker. In this example, the worker exposes two methods (`sum` and `mul`) and a single event (`ping`) to the parent. The parent could expose methods and events as well.
 
 Install:
 ```
@@ -38,15 +39,16 @@ const messenger = new WorkerMessenger({ worker });
 
 ParentHandshake(messenger).then((connection) => {
   const remoteHandle = connection.remoteHandle();
-  const localHandle = connection.localHandle();
 
   // Call methods on the worker and get the result as a promise
   remoteHandle.call('sum', 3, 4).then((result) => {
     console.log(result); // 7
   });
 
-  // Emit custom events to the worker
-  localHandle.emit('ping',  'Oh, hi!');
+  // Listen for a specific custom event from the worker
+  remoteHandle.addEventListener('ping', (payload) => {
+    console.log(payload) // 'Oh, hi!'
+  });
 });
 ```
 
@@ -62,12 +64,10 @@ const methods = {
 
 const messenger = WorkerMessenger({worker: self});
 ChildHandshake(messenger, methods).then((connection) => {
-  const remoteHandle = connection.remoteHandle();
+  const localHandle = connection.localHandle();
 
-  // Listen for a specific custom event from the app
-  remoteHandle.addEventListener('ping', (payload) => {
-    console.log(payload) // 'Oh, hi!'
-  });
+  // Emit custom events to the app
+  localHandle.emit('ping',  'Oh, hi!');
 });
 ```
 
@@ -97,34 +97,36 @@ Now, after a few iterations, I believe post-me is ready to be introduced to a la
 ## 2. Typescript
 Using typescript you can ensure that the parent and the child are using each other's methods and events correctly. Most coding mistakes will be caught during development by the typescript compiler.
 
+Thanks to __post-me__ extensive typescript support, the correctness of the following items can be statically checked during development:
+- Method names
+- Argument number and types
+- Return values type
+- Event names
+- Event payload type
+
 Let's rewrite the small example above in typescript!
 
 Types code:
 ```typescript
 // types.ts
 
-export type ParentMethods = {}
-
-export type ParentEvents = {
-  'ping': string;
-}
-
 export type WorkerMethods = {
   sum: (x: number, y: number) => number;
   mul: (x: number, y: number) => number;
 }
 
-export type WorkerEvents = {}
+export type WorkerEvents = {
+  'ping': string;
+}
 ```
 
 Parent Code:
 ```typescript
 import {
- ParentHandshake, WorkerMessenger,
- LocalHandle, RemoteHandle
+ ParentHandshake, WorkerMessenger, RemoteHandle
 } from 'post-me';
 
-import { ParentEvents, WorkerMethods, WorkerEvents } from './types';
+import { WorkerMethods, WorkerEvents } from './types';
 
 const worker = new Worker('./worker.js');
 
@@ -133,29 +135,28 @@ const messenger = new WorkerMessenger({ worker });
 ParentHandshake(messenger).then((connection) => {
   const remoteHandle: RemoteHandle<WorkerMethods, WorkerEvents>
     = connection.remoteHandle();
-  const localHandle: LocalHandle<ParentEvents>
-    = connection.localHandle();
 
   // Call methods on the worker and get the result as a Promise
   remoteHandle.call('sum', 3, 4).then((result) => {
     console.log(result); // 7
   });
 
-  // Emit custom events to the worker
-  localHandle.emit('ping',  'Oh, hi!');
+  // Listen for a specific custom event from the app
+  remoteHandle.addEventListener('ping', (payload) => {
+    console.log(payload) // 'Oh, hi!'
+  });
 
   // The following lines have various mistakes that will be caught by the compiler
   remoteHandle.call('mul', 3, 'four'); // Wrong argument type
   remoteHandle.call('foo'); // 'foo' doesn't exist on WorkerMethods type
-  localHandle.emit('ping', 3); // Wrong event payload, should be string
 });
 ```
 
 Worker code:
 ```typescript
-import { ChildHandshake, WorkerMessenger, RemoteHandle } from 'post-me';
+import { ChildHandshake, WorkerMessenger, LocalHandle } from 'post-me';
 
-import { ParentMethods, ParentEvents, WorkerMethods } from './types';
+import { WorkerMethods, WorkerEvents } from './types';
 
 const methods: WorkerMethods = {
   sum: (x: number, y: number) => x + y,
@@ -164,13 +165,11 @@ const methods: WorkerMethods = {
 
 const messenger = WorkerMessenger({worker: self});
 ChildHandshake(messenger, methods).then((connection) => {
-  const remoteHandle: RemoteHandle<ParentMethods, ParentEvents>
-    = connection.remoteHandle();
+  const localHandle: LocalHandle<WorkerMethods, WorkerEvents>
+    = connection.localHandle();
 
-  // Listen for a specific custom event from the app
-  remoteHandle.addEventListener('ping', (payload) => {
-    console.log(payload) // 'Oh, hi!'
-  });
+  // Emit custom events to the worker
+  localHandle.emit('ping',  'Oh, hi!');
 });
 ```
 
